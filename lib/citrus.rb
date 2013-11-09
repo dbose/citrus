@@ -918,6 +918,57 @@ module Citrus
     end
   end
 
+  # A Processor is a rule that take a lambda or block and use that to
+  # do arbitary string processing before the match
+  class ProcessorTerminal
+    include Rule
+
+    def initialize(word, &block)
+      @word = word
+      @processor = block
+    end  
+
+    attr_accessor :word, :processor
+
+    # Returns an array of events for this rule on the given +input+.
+    def exec(input, events=[])
+      match = nil
+      match = @processor[input]
+
+      if match
+        events << self
+        events << CLOSE
+        events << @word.length
+      end  
+
+      events
+    end
+
+    def case_sensitive?
+      false
+    end
+
+    def ==(other)
+      case other
+      when String
+        @word == other
+      else
+        super
+      end
+    end
+    alias_method :eql?, :==
+
+    def terminal? # :nodoc:
+      true
+    end
+
+    # Returns the Citrus notation of this rule as a string.
+    def to_citrus # :nodoc:
+      @word
+    end
+
+  end  
+
   # A StringTerminal is a Terminal that may be instantiated from a String
   # object. The Citrus notation is any sequence of characters enclosed in either
   # single or double quotes, e.g.:

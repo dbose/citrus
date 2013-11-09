@@ -119,7 +119,7 @@ module Citrus
     end
 
     rule :primary do
-      any(:grouping, :proxy, :terminal)
+      any(:grouping, :proxy, :terminal, :processor_terminal)
     end
 
     rule :grouping do
@@ -187,6 +187,15 @@ module Citrus
         end
       }
     end
+
+    rule :processor_terminal do
+      all(any(:quoted_string, :case_insensitive_string, :regular_expression), :block) {
+        primitive = super()
+        if String === primitive
+          ProcessorTerminal.new(primitive, &block.value)
+        end                      
+      }
+    end  
 
     rule :quoted_string do
       mod all(/(["'])(?:\\?.)*?\1/, :space) do
